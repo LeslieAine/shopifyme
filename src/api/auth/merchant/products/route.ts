@@ -1,6 +1,6 @@
+import fetch from "node-fetch"
 import { Modules } from "@medusajs/framework/utils"
 import { linkProductsToSalesChannelWorkflow } from "@medusajs/medusa/core-flows"
-// import { Modules } from "@medusajs/framework/utils"
 
 export const config = {
   auth: {
@@ -17,54 +17,44 @@ export async function GET(req, res) {
     })
   }
 
-  const productService = req.scope.resolve(Modules.PRODUCT)
-
-  /**
-   * IMPORTANT:
-   * We CANNOT filter by sales_channel_id here (Medusa v2 limitation).
-   * This endpoint is used for:
-   * - merchant dashboard
-   * - deriving collections
-   *
-   * For now we return ALL products.
-   * Sales-channel isolation is enforced elsewhere (storefront + write flow).
-   */
-  const products = await productService.listProducts(
-    {},
+  const storeRes = await fetch(
+    `${process.env.MEDUSA_BACKEND_URL}/store/products?sales_channel_id=${sales_channel_id}&fields=id,title,collection_id`,
     {
-      relations: ["collection"],
+      headers: {
+        "x-publishable-api-key": process.env.MEDUSA_PUBLISHABLE_KEY,
+      },
     }
   )
 
-  return res.json({ products })
+  const data = await storeRes.json()
+
+  if (!storeRes.ok) {
+    return res.status(storeRes.status).json(data)
+  }
+
+  return res.json({
+    products: data.products || [],
+  })
 }
 
 
 export async function POST(req, res) {
   const { title, description, sales_channel_id } = req.body
 
-  if (!title) {
+  if (!title || !sales_channel_id) {
     return res.status(400).json({
-      message: "Product title is required",
-    })
-  }
-
-  if (!sales_channel_id) {
-    return res.status(400).json({
-      message: "sales_channel_id is required",
+      message: "title and sales_channel_id are required",
     })
   }
 
   const productService = req.scope.resolve(Modules.PRODUCT)
 
-  // 1️⃣ Create product (NO sales_channels here)
   const product = await productService.createProducts({
     title,
     description,
     status: "draft",
   })
 
-  // 2️⃣ Link product to sales channel (THIS IS THE KEY)
   await linkProductsToSalesChannelWorkflow(req.scope).run({
     input: {
       id: sales_channel_id,
@@ -72,9 +62,7 @@ export async function POST(req, res) {
     },
   })
 
-  return res.status(201).json({
-    product,
-  })
+  return res.status(201).json({ product })
 }
 
 
