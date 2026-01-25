@@ -1,4 +1,4 @@
-import { loadEnv, defineConfig, Modules, ContainerRegistrationKeys, } from "@medusajs/framework/utils"
+import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
@@ -8,26 +8,16 @@ module.exports = defineConfig({
     http: {
       storeCors: "http://localhost:3000",
       adminCors: "http://localhost:7001,http://localhost:3000",
-      authCors: process.env.AUTH_CORS!,
+      // authCors: "http://localhost:3000", 
+      authCors: "http://localhost:3000,http://localhost:7001",
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      
     },
   },
 
   // ✅ CORE MODULES ONLY
   modules: [
-    // {
-    //   resolve: "@medusajs/medusa/auth",
-    //   dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
-    //   options: {
-    //     providers: [
-    //       {
-    //         resolve: "@medusajs/medusa/auth-emailpass",
-    //         id: "emailpass",
-    //       },
-    //     ],
-    //   },
-    // },
     {
       resolve: "@medusajs/medusa/auth",
       options: {
