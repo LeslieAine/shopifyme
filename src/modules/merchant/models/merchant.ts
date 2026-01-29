@@ -8,6 +8,7 @@ const Merchant = model.define("merchant", {
 
   // ownership link
   store_id: model.text().nullable(),
+  sales_channel_id: model.text().nullable(),
 
   status: model.enum(["pending", "active"]).default("pending"),
 })
