@@ -32,5 +32,17 @@ export default defineMiddlewares({
                 authenticate("merchant", ["session", "bearer"]),
             ],
         },
+        {
+            matcher: "/merchant/collections*",
+            middlewares: [
+                authenticate("merchant", ["session", "bearer"]),
+            ],
+        },
+        {
+            matcher: "/merchant/categories*",
+            middlewares: [
+                authenticate("merchant", ["session", "bearer"]),
+            ],
+        },
     ],
 })

@@ -28,6 +28,7 @@
     "@medusajs/medusa": "2.12.4",
     "@medusajs/payment-stripe": "^2.12.4",
     "jsonwebtoken": "^9.0.3",
+    "kysely": "^0.28.10",
     "medusa-payment-manual": "^1.0.25"
   },
   "devDependencies": {
