@@ -1,48 +1,130 @@
 import {
-    defineMiddlewares,
-    authenticate,
+  defineMiddlewares,
+  authenticate,
 } from "@medusajs/framework/http"
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+
+function cors(req: MedusaRequest, res: MedusaResponse, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000")
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  )
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  )
+
+  // IMPORTANT: short-circuit preflight
+  if (req.method === "OPTIONS") {
+    res.status(200).send()
+    return
+  }
+
+  next()
+}
 
 export default defineMiddlewares({
-    routes: [
-        {
-            matcher: "/merchant",
-            method: "POST",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"], {
-                    allowUnregistered: true,
-                }),
-            ],
-        },
-        {
-            matcher: "/merchant/me*",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"]),
-            ],
-        },
-        {
-            matcher: "/merchant/store*",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"]),
-            ],
-        },
-        {
-            matcher: "/merchant/products*",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"]),
-            ],
-        },
-        {
-            matcher: "/merchant/collections*",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"]),
-            ],
-        },
-        {
-            matcher: "/merchant/categories*",
-            middlewares: [
-                authenticate("merchant", ["session", "bearer"]),
-            ],
-        },
-    ],
+  routes: [
+    // 🔹 CORS must run FIRST for all merchant routes
+    {
+      matcher: "/merchant*",
+      middlewares: [cors],
+    },
+
+    // 🔹 Merchant registration
+    {
+      matcher: "/merchant",
+      method: "POST",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"], {
+          allowUnregistered: true,
+        }),
+      ],
+    },
+
+    // 🔹 Authenticated merchant routes
+    {
+      matcher: "/merchant/me*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+    {
+      matcher: "/merchant/store*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+    {
+      matcher: "/merchant/products*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+    {
+      matcher: "/merchant/collections*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+    {
+      matcher: "/merchant/categories*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+  ],
 })
+
+
+
+
+// import {
+//     defineMiddlewares,
+//     authenticate,
+// } from "@medusajs/framework/http"
+
+// export default defineMiddlewares({
+//     routes: [
+//         {
+//             matcher: "/merchant",
+//             method: "POST",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"], {
+//                     allowUnregistered: true,
+//                 }),
+//             ],
+//         },
+//         {
+//             matcher: "/merchant/me*",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"]),
+//             ],
+//         },
+//         {
+//             matcher: "/merchant/store*",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"]),
+//             ],
+//         },
+//         {
+//             matcher: "/merchant/products*",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"]),
+//             ],
+//         },
+//         {
+//             matcher: "/merchant/collections*",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"]),
+//             ],
+//         },
+//         {
+//             matcher: "/merchant/categories*",
+//             middlewares: [
+//                 authenticate("merchant", ["session", "bearer"]),
+//             ],
+//         },
+//     ],
+// })

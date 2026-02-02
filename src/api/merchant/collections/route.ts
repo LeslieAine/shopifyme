@@ -1,4 +1,3 @@
-// // src/api/merchant/collections/route.ts
 // import type {
 //   AuthenticatedMedusaRequest,
 //   MedusaResponse,
@@ -6,35 +5,37 @@
 // import { MedusaError } from "@medusajs/framework/utils"
 // import { pool } from "../../../lib/db"
 
-// type Body = {
+// type CreateCollectionBody = {
 //   title: string
-//   handle?: string
+//   handle: string
 //   description?: string
 // }
 
-// export async function POST(
-//   req: AuthenticatedMedusaRequest<Body>,
+// export const config = {
+//   auth: {
+//     actor: "merchant",
+//   },
+// }
+
+// /**
+//  * GET /merchant/collections
+//  * List collections belonging to the merchant (via sales channel)
+//  */
+// export async function GET(
+//   req: AuthenticatedMedusaRequest,
 //   res: MedusaResponse
 // ) {
-//   if (!req.auth_context?.actor_id) {
+//   const merchantId = req.auth_context?.actor_id
+
+//   if (!merchantId) {
 //     throw new MedusaError(
 //       MedusaError.Types.UNAUTHORIZED,
 //       "Not authenticated as merchant"
 //     )
 //   }
 
-//   const { title, description } = req.body
-//   if (!title) {
-//     throw new MedusaError(
-//       MedusaError.Types.INVALID_DATA,
-//       "title is required"
-//     )
-//   }
-
 //   const merchantService = req.scope.resolve("merchant")
-//   const merchant = await merchantService.retrieveMerchant(
-//     req.auth_context.actor_id
-//   )
+//   const merchant = await merchantService.retrieveMerchant(merchantId)
 
 //   if (!merchant.sales_channel_id) {
 //     throw new MedusaError(
@@ -43,19 +44,60 @@
 //     )
 //   }
 
-//   const handle =
-//     req.body.handle ??
-//     title
-//       .toLowerCase()
-//       .replace(/[^a-z0-9]+/g, "-")
-//       .replace(/(^-|-$)/g, "")
+//   const { rows } = await pool.query(
+//     `
+//     SELECT id, title, handle, description, created_at
+//     FROM merchant_collections
+//     WHERE sales_channel_id = $1
+//     ORDER BY created_at DESC
+//     `,
+//     [merchant.sales_channel_id]
+//   )
+
+//   res.json({ collections: rows })
+// }
+
+// /**
+//  * POST /merchant/collections
+//  * Create a collection scoped to merchant sales channel
+//  */
+// export async function POST(
+//   req: AuthenticatedMedusaRequest<CreateCollectionBody>,
+//   res: MedusaResponse
+// ) {
+//   const merchantId = req.auth_context?.actor_id
+//   const { title, handle, description } = req.body
+
+//   if (!merchantId) {
+//     throw new MedusaError(
+//       MedusaError.Types.UNAUTHORIZED,
+//       "Not authenticated as merchant"
+//     )
+//   }
+
+//   if (!title || !handle) {
+//     throw new MedusaError(
+//       MedusaError.Types.INVALID_DATA,
+//       "title and handle are required"
+//     )
+//   }
+
+//   const merchantService = req.scope.resolve("merchant")
+//   const merchant = await merchantService.retrieveMerchant(merchantId)
+
+//   if (!merchant.sales_channel_id) {
+//     throw new MedusaError(
+//       MedusaError.Types.INVALID_DATA,
+//       "Merchant has no sales channel"
+//     )
+//   }
 
 //   const { rows } = await pool.query(
 //     `
 //     INSERT INTO merchant_collections
 //       (sales_channel_id, title, handle, description)
 //     VALUES ($1, $2, $3, $4)
-//     RETURNING *
+//     RETURNING id, title, handle, description
 //     `,
 //     [
 //       merchant.sales_channel_id,
@@ -67,11 +109,13 @@
 
 //   res.status(201).json({ collection: rows[0] })
 // }
+
 import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
+import { ulid } from "ulid"
 import { pool } from "../../../lib/db"
 
 type CreateCollectionBody = {
@@ -86,10 +130,10 @@ export const config = {
   },
 }
 
-/**
- * GET /merchant/collections
- * List collections belonging to the merchant (via sales channel)
- */
+// /**
+//  * GET /merchant/collections
+//  * List collections belonging to the merchant (via sales channel)
+//  */
 export async function GET(
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse
@@ -126,10 +170,6 @@ export async function GET(
   res.json({ collections: rows })
 }
 
-/**
- * POST /merchant/collections
- * Create a collection scoped to merchant sales channel
- */
 export async function POST(
   req: AuthenticatedMedusaRequest<CreateCollectionBody>,
   res: MedusaResponse
@@ -161,14 +201,18 @@ export async function POST(
     )
   }
 
+  // 🔑 THIS IS THE FIX
+  const collectionId = `mcol_${ulid()}`
+
   const { rows } = await pool.query(
     `
     INSERT INTO merchant_collections
-      (sales_channel_id, title, handle, description)
-    VALUES ($1, $2, $3, $4)
+      (id, sales_channel_id, title, handle, description)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING id, title, handle, description
     `,
     [
+      collectionId,
       merchant.sales_channel_id,
       title,
       handle,
