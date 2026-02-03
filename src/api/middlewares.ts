@@ -37,23 +37,13 @@ export default defineMiddlewares({
       middlewares: [cors],
     },
 
-    // {
-    //   matcher: "/static/*",
-    //   middlewares: [
-    //     cors({
-    //       origin: [
-    //         "http://localhost:7001",
-    //         "http://localhost:3000",
-    //       ],
-    //     }),
-    //   ],
-    // },
-
     {
-      method: ["POST"],
+      method: ["POST", "OPTIONS"],
       matcher: "/merchant/uploads",
+    //   bodyParser: false,
       middlewares: [
         // Multer injects req.files
+        authenticate("merchant", ["session", "bearer"]),
         // @ts-ignore – Medusa request typing does not include Multer
         upload.array("files"),
       ],

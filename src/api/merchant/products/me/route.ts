@@ -4,6 +4,13 @@ import {
 } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 
+// export const config = {
+//   auth: {
+//     actor: "merchant",
+//   },
+// }
+
+
 export async function GET(
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse

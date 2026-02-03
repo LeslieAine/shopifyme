@@ -34,6 +34,22 @@ module.exports = defineConfig({
     resolve: "./src/modules/merchant",
   },
 
+  {
+      resolve: "@medusajs/medusa/file",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/file-local",
+            id: "local",
+            options: {
+              upload_dir: "static",
+              backend_url: "http://localhost:9000/static",
+            },
+          },
+        ],
+      },
+    },
+
     {
       resolve: "@medusajs/medusa/payment",
       options: {
