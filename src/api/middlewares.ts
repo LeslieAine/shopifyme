@@ -3,6 +3,11 @@ import {
   authenticate,
 } from "@medusajs/framework/http"
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import multer from "multer"
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+})
 
 function cors(req: MedusaRequest, res: MedusaResponse, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000")
@@ -30,6 +35,28 @@ export default defineMiddlewares({
     {
       matcher: "/merchant*",
       middlewares: [cors],
+    },
+
+    // {
+    //   matcher: "/static/*",
+    //   middlewares: [
+    //     cors({
+    //       origin: [
+    //         "http://localhost:7001",
+    //         "http://localhost:3000",
+    //       ],
+    //     }),
+    //   ],
+    // },
+
+    {
+      method: ["POST"],
+      matcher: "/merchant/uploads",
+      middlewares: [
+        // Multer injects req.files
+        // @ts-ignore – Medusa request typing does not include Multer
+        upload.array("files"),
+      ],
     },
 
     // 🔹 Merchant registration

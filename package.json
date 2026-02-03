@@ -29,14 +29,17 @@
     "@medusajs/payment-stripe": "^2.12.4",
     "jsonwebtoken": "^9.0.3",
     "kysely": "^0.28.10",
-    "medusa-payment-manual": "^1.0.25"
+    "medusa-payment-manual": "^1.0.25",
+    "multer": "^2.0.2"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.12.4",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
+    "@types/express": "^5.0.6",
     "@types/jest": "^29.5.13",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20.12.11",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.2.25",

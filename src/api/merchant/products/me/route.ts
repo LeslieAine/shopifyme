@@ -1,53 +1,3 @@
-// import {
-//   AuthenticatedMedusaRequest,
-//   MedusaResponse,
-// } from "@medusajs/framework/http"
-// import { MedusaError } from "@medusajs/framework/utils"
-
-// type SalesChannelWithProducts = {
-//   id: string
-//   products: any[]
-// }
-
-// export async function GET(
-//   req: AuthenticatedMedusaRequest,
-//   res: MedusaResponse
-// ) {
-//   const merchantService = req.scope.resolve("merchant")
-//   const query = req.scope.resolve("query")
-
-//   const merchant = await merchantService.retrieveMerchant(
-//     req.auth_context.actor_id
-//   )
-
-//   if (!merchant.sales_channel_id) {
-//     throw new MedusaError(
-//       MedusaError.Types.INVALID_DATA,
-//       "Merchant has no sales channel"
-//     )
-//   }
-
-//   const { data } = await query.graph(
-//     {
-//       entity: "sales_channel",
-//       fields: ["id", "products.*"],
-//       filters: {
-//         id: merchant.sales_channel_id,
-//       },
-//     },
-//     { throwIfKeyNotFound: true }
-//   )
-
-//   // ✅ Explicit, intentional cast (TS-approved)
-//   const salesChannel =
-//     data[0] as unknown as SalesChannelWithProducts
-
-//   res.json({
-//     products: salesChannel.products,
-//   })
-// }
-
-
 import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
@@ -97,9 +47,13 @@ export async function GET(
    */
   const { data: products } = await query.graph({
     entity: "product",
-    fields: ["*"],
+    fields: ["*",
+      "images.*",
+      "variants.*",
+      "variants.prices.*",
+    ],
     filters: {
-      id: productIds,
+      id: productIds
     },
   })
 
