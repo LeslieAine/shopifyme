@@ -1,79 +1,3 @@
-// import {
-//   AuthenticatedMedusaRequest,
-//   MedusaResponse,
-// } from "@medusajs/framework/http"
-// import { MedusaError } from "@medusajs/framework/utils"
-// import {
-//   updateProductsWorkflow,
-//   updateProductVariantsWorkflow,
-// } from "@medusajs/medusa/core-flows"
-
-// type Body = {
-//   title?: string
-//   description?: string
-//   price?: number
-// }
-
-// export async function PATCH(
-//   req: AuthenticatedMedusaRequest<Body>,
-//   res: MedusaResponse
-// ) {
-//   const merchantId = req.auth_context.actor_id
-//   const productId = req.params.id
-//   const { title, description, price } = req.body
-
-//   if (!merchantId) {
-//     throw new MedusaError(
-//       MedusaError.Types.UNAUTHORIZED,
-//       "Not authenticated"
-//     )
-//   }
-
-//   // 1️⃣ Update product fields
-//   if (title || description) {
-//     await updateProductsWorkflow(req.scope).run({
-//       input: {
-//         products: [
-//           {
-//             id: productId,
-//             ...(title && { title }),
-//             ...(description && { description }),
-//           },
-//         ],
-//       },
-//     })
-//   }
-
-//   // 2️⃣ Update price (single-variant assumption)
-//   if (price !== undefined) {
-//     const productService = req.scope.resolve("product")
-//     const product = await productService.retrieveProduct(productId, {
-//       relations: ["variants"],
-//     })
-
-//     const variant = product.variants[0]
-
-//     await updateProductVariantsWorkflow(req.scope).run({
-//       input: {
-//         product_variants: [
-//           {
-//             id: variant.id,
-//             prices: [
-//               {
-//                 amount: Math.round(price * 100),
-//                 currency_code: "usd",
-//               },
-//             ],
-//           },
-//         ],
-//       },
-//     })
-//   }
-
-//   res.json({ ok: true })
-// }
-
-
 import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
@@ -145,7 +69,10 @@ export async function GET(
     fields: [
       "*",
       "images.*",
+       "options.*",
+    "options.values.*",
       "variants.*",
+      'variants.options.*',
       "variants.prices.*",
     ],
     filters: {
