@@ -1,56 +1,3 @@
-// import {
-//   AuthenticatedMedusaRequest,
-//   MedusaResponse,
-// } from "@medusajs/framework/http"
-// import { MedusaError } from "@medusajs/framework/utils"
-// import { linkProductsToSalesChannelWorkflow } from "@medusajs/medusa/core-flows"
-
-// type Body = {
-//   title: string
-//   description?: string
-// }
-
-// export async function POST(
-//   req: AuthenticatedMedusaRequest<Body>,
-//   res: MedusaResponse
-// ) {
-//   const merchantService = req.scope.resolve("merchant")
-//   const productService = req.scope.resolve("product")
-
-//   const merchantId = req.auth_context.actor_id
-//   if (!merchantId) {
-//     throw new MedusaError(
-//       MedusaError.Types.UNAUTHORIZED,
-//       "Not authenticated as merchant"
-//     )
-//   }
-
-//   const merchant = await merchantService.retrieveMerchant(merchantId)
-
-//   if (!merchant.sales_channel_id) {
-//     throw new MedusaError(
-//       MedusaError.Types.INVALID_DATA,
-//       "Merchant has no sales channel"
-//     )
-//   }
-
-//   // 1️⃣ Create product (draft by default)
-//   const product = await productService.createProducts({
-//     title: req.body.title,
-//     description: req.body.description,
-//     status: "published",
-//   })
-
-//   // 2️⃣ Link product → merchant’s PRIVATE sales channel
-//   await linkProductsToSalesChannelWorkflow(req.scope).run({
-//     input: {
-//       id: merchant.sales_channel_id,
-//       add: [product.id],
-//     },
-//   })
-
-//   res.status(201).json({ product })
-// }
 import {
     AuthenticatedMedusaRequest,
     MedusaResponse,
@@ -150,27 +97,6 @@ export async function POST(
       ],
     },
   })
-
-
-    // 4️⃣ Attach price to variant (CORRECT INPUT SHAPE)
-    // await upsertVariantPricesWorkflow(req.scope).run({
-    //     input: {
-    //         variantPrices: [
-    //             {
-    //                 variant_id: variant.id,
-    //                 product_id: product.id,
-    //                 prices: [
-    //                     {
-    //                         amount: Math.round(price * 100),
-    //                         currency_code: "usd",
-    //                     },
-    //                 ],
-    //             },
-    //         ],
-    //         previousVariantIds: [], //REQUIRED BY TYPE
-    //     },
-    // })
-
 
     res.status(201).json({ product })
 }

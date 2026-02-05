@@ -1,3 +1,4 @@
+// src/api/middlewares.ts
 import {
   defineMiddlewares,
   authenticate,
@@ -40,7 +41,7 @@ export default defineMiddlewares({
     {
       method: ["POST", "OPTIONS"],
       matcher: "/merchant/uploads",
-    //   bodyParser: false,
+      //   bodyParser: false,
       middlewares: [
         // Multer injects req.files
         authenticate("merchant", ["session", "bearer"]),
@@ -59,6 +60,14 @@ export default defineMiddlewares({
         }),
       ],
     },
+
+    {
+      matcher: "/merchant/regions*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+
 
     // 🔹 Authenticated merchant routes
     {
@@ -93,55 +102,3 @@ export default defineMiddlewares({
     },
   ],
 })
-
-
-
-
-// import {
-//     defineMiddlewares,
-//     authenticate,
-// } from "@medusajs/framework/http"
-
-// export default defineMiddlewares({
-//     routes: [
-//         {
-//             matcher: "/merchant",
-//             method: "POST",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"], {
-//                     allowUnregistered: true,
-//                 }),
-//             ],
-//         },
-//         {
-//             matcher: "/merchant/me*",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"]),
-//             ],
-//         },
-//         {
-//             matcher: "/merchant/store*",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"]),
-//             ],
-//         },
-//         {
-//             matcher: "/merchant/products*",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"]),
-//             ],
-//         },
-//         {
-//             matcher: "/merchant/collections*",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"]),
-//             ],
-//         },
-//         {
-//             matcher: "/merchant/categories*",
-//             middlewares: [
-//                 authenticate("merchant", ["session", "bearer"]),
-//             ],
-//         },
-//     ],
-// })
