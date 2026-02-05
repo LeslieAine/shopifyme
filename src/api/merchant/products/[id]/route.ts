@@ -3,7 +3,7 @@ import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
+import { MedusaError, QueryContext } from "@medusajs/framework/utils"
 import {
   updateProductsWorkflow,
   updateProductVariantsWorkflow,
@@ -23,6 +23,12 @@ export async function GET(
 ) {
   const merchantId = req.auth_context.actor_id
   const productId = req.params.id
+  const currency_code =
+  req.query.currency_code?.toString() || "usd"
+
+const region_id =
+  req.query.region_id?.toString()
+
 
   if (!merchantId) {
     throw new MedusaError(
@@ -33,6 +39,7 @@ export async function GET(
 
   const merchantService = req.scope.resolve("merchant")
   const query = req.scope.resolve("query")
+
 
   const merchant = await merchantService.retrieveMerchant(merchantId)
 
@@ -65,21 +72,62 @@ export async function GET(
   /**
    * Fetch product with media + variants
    */
-  const { data: products } = await query.graph({
-    entity: "product",
-    fields: [
-      "*",
-      "images.*",
-       "options.*",
+
+  const regionId = req.query.region_id
+  const currencyCode = req.query.currency_code
+
+  // const { data: products } = await query.graph({
+  //   entity: "product",
+  //   fields: [
+  //     "*",
+  //     "images.*",
+  //     "options.*",
+  //     "options.values.*",
+  //     "variants.*",
+  //     'variants.options.*',
+  //     "variants.prices.*",
+  //     "variants.calculated_price.*"
+  //   ],
+  //   filters: {
+  //     id: productId,
+  //   },
+  //   context: regionId && currencyCode ? {
+  //     variants: {
+  //       calculated_price: QueryContext({
+  //         region_id: regionId,
+  //         currency_code: currencyCode,
+  //       }),
+  //     },
+  //   } : undefined,
+  // })
+
+const { data: products } = await query.graph({
+  entity: "product",
+  fields: [
+    "*",
+    "images.*",
+    "options.*",
     "options.values.*",
-      "variants.*",
-      'variants.options.*',
-      "variants.prices.*",
-    ],
-    filters: {
-      id: productId,
+    "variants.*",
+    "variants.options.*",
+
+    // 👇 THIS is where pricing context lives
+    "variants.calculated_price.*",
+  ],
+  filters: {
+    id: productId,
+  },
+  context: {
+      variants: {
+        calculated_price: QueryContext({
+          currency_code: currencyCode,
+          ...(regionId && { region_id: regionId }),
+        }),
+      },
     },
-  })
+})
+
+
 
   const product = products[0]
 
