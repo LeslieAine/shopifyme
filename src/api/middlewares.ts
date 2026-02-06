@@ -89,6 +89,10 @@ export default defineMiddlewares({
       ],
     },
     {
+      matcher: "/merchant/sales*",
+      middlewares: [authenticate("merchant", ["session", "bearer"])],
+    },
+    {
       matcher: "/merchant/variants*",
       middlewares: [authenticate("merchant", ["session", "bearer"])],
     },
