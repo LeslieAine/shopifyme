@@ -78,26 +78,28 @@ export async function POST(
 
     // 3️⃣ Create DEFAULT variant (CORRECT INPUT SHAPE)
     const { result: variants } =
-  await createProductVariantsWorkflow(req.scope).run({
-    input: {
-      product_variants: [
-        {
-          product_id: product.id,
-          title: "Default",
-          sku: `${product.id}-default`,
-          options: {
-            Default: "Default",
-          },
-          prices: [
-            {
-              amount: Math.round(price * 100),
-              currency_code: "usd",
+        await createProductVariantsWorkflow(req.scope).run({
+            input: {
+                product_variants: [
+                    {
+                        product_id: product.id,
+                        title: "Default",
+                        sku: `${product.id}-default`,
+                        manage_inventory: true,
+                        allow_backorder: false,
+                        options: {
+                            Default: "Default",
+                        },
+                        prices: [
+                            {
+                                amount: Math.round(price),
+                                currency_code: "usd",
+                            },
+                        ],
+                    },
+                ],
             },
-          ],
-        },
-      ],
-    },
-  })
+        })
 
     res.status(201).json({ product })
 }

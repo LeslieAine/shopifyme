@@ -108,5 +108,17 @@ export default defineMiddlewares({
         authenticate("merchant", ["session", "bearer"]),
       ],
     },
+    {
+      matcher: "/merchant/stock-locations*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+    {
+      matcher: "/merchant/inventory*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
   ],
 })

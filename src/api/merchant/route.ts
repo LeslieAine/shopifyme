@@ -1,3 +1,4 @@
+// src/api/merchant/route.ts
 import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,

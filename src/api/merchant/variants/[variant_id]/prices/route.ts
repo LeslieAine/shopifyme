@@ -1,3 +1,4 @@
+// src/api/merchant/variants/[variant_id]/prices/route.ts
 import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
