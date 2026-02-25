@@ -9,6 +9,7 @@ import createMerchantWorkflow from "../../workflows/create-merchant"
 type RequestBody = {
   name: string
   email: string
+  region_ids: string[]
 }
 
 export async function POST(
@@ -23,12 +24,30 @@ export async function POST(
     )
   }
 
+  if (!req.body.region_ids || req.body.region_ids.length === 0) {
+  throw new MedusaError(
+    MedusaError.Types.INVALID_DATA,
+    "region_ids are required"
+  )
+}
+
+  // const { result } = await createMerchantWorkflow(req.scope).run({
+  //   input: {
+  //     merchant: req.body,
+  //     authIdentityId: req.auth_context.auth_identity_id,
+  //   },
+  // })
   const { result } = await createMerchantWorkflow(req.scope).run({
-    input: {
-      merchant: req.body,
-      authIdentityId: req.auth_context.auth_identity_id,
+  input: {
+    merchant: {
+      name: req.body.name,
+      email: req.body.email,
     },
-  })
+    region_ids: req.body.region_ids,
+    authIdentityId: req.auth_context.auth_identity_id,
+  },
+})
+
 
   res.status(200).json({ merchant: result })
 }

@@ -120,5 +120,11 @@ export default defineMiddlewares({
         authenticate("merchant", ["session", "bearer"]),
       ],
     },
+    {
+      matcher: "/merchant/shipping-profiles*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
   ],
 })
