@@ -71,6 +71,11 @@ type CreateMerchantWorkflowInput = {
   merchant: {
     name: string
     email: string
+    warehouse_address_line_1: string
+    warehouse_city: string
+    warehouse_postal_code: string
+    warehouse_country_code: string
+    warehouse_phone?: string
   }
   region_ids: string[]
   authIdentityId: string
