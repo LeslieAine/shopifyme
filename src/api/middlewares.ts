@@ -126,5 +126,12 @@ export default defineMiddlewares({
         authenticate("merchant", ["session", "bearer"]),
       ],
     },
+    {
+      matcher: "/merchant/orders*",
+      middlewares: [
+        authenticate("merchant", ["session", "bearer"]),
+      ],
+    },
+
   ],
 })

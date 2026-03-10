@@ -8,6 +8,10 @@ import {
   createLocationFulfillmentSetWorkflow,
   createServiceZonesWorkflow,
   createShippingOptionsWorkflow,
+  linkSalesChannelsToStockLocationWorkflow,
+  createApiKeysWorkflow,
+linkSalesChannelsToApiKeyWorkflow,
+
 } from "@medusajs/medusa/core-flows"
 import { pool } from "../../../../../lib/db"
 
@@ -55,6 +59,47 @@ export async function POST(
       "Merchant missing shipping profile"
     )
   }
+
+    const publishableKeyTitle = `Merchant ${merchant.id} Storefront Key`
+
+  const { data: merchantApiKeys } = await query.graph({
+    entity: "api_key",
+    fields: ["id", "title", "type", "revoked_at"],
+    filters: {
+      title: publishableKeyTitle,
+      type: "publishable",
+    },
+  })
+
+  let publishableKeyId = (merchantApiKeys || []).find(
+    (k: any) => !k.revoked_at
+  )?.id as string | undefined
+
+  if (!publishableKeyId) {
+    const {
+      result: [createdApiKey],
+    } = await createApiKeysWorkflow(req.scope).run({
+      input: {
+        api_keys: [
+          {
+            title: publishableKeyTitle,
+            type: "publishable",
+            created_by: "",
+          },
+        ],
+      },
+    })
+
+    publishableKeyId = (createdApiKey as any)?.id
+  }
+
+  if (!publishableKeyId) {
+    throw new MedusaError(
+      MedusaError.Types.UNEXPECTED_STATE,
+      "Failed to resolve merchant publishable API key"
+    )
+  }
+
 
   // 1) Resolve/create stock location
   let stockLocationId = merchant.stock_location_id as string | undefined
@@ -170,6 +215,36 @@ export async function POST(
       stock_location_id: stockLocationId,
     })
   }
+
+
+try {
+  await linkSalesChannelsToStockLocationWorkflow(req.scope).run({
+    input: {
+      id: stockLocationId,
+      add: [merchant.sales_channel_id],
+    },
+  })
+} catch (e: any) {
+  const msg = String(e?.message ?? "").toLowerCase()
+  if (!msg.includes("already exists") && !msg.includes("already linked")) {
+    throw e
+  }
+}
+
+  try {
+    await linkSalesChannelsToApiKeyWorkflow(req.scope).run({
+      input: {
+        id: publishableKeyId,
+        add: [merchant.sales_channel_id],
+      },
+    })
+  } catch (e: any) {
+    const msg = String(e?.message ?? "").toLowerCase()
+    if (!msg.includes("already exists") && !msg.includes("already linked")) {
+      throw e
+    }
+  }
+
 
   // 4) Ensure provider is enabled on reconciled stock location
   const backendUrl = process.env.MEDUSA_BACKEND_URL ?? "http://localhost:9000"
@@ -361,9 +436,11 @@ export async function POST(
     stock_location_id: stockLocationId,
   })
 
-  res.json({
+    res.json({
     message: "Merchant activated",
+    publishable_key_id: publishableKeyId,
   })
+
 }
 
 
